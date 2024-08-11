@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% block content %}
+  <div class="container">
+    <h1 class="my-4">{{ product.name }}</h1>
+    <div class="row">
+      <div class="col-12 col-lg-8">
+        <!-- IMAGES -->
+         <div id="imageData" data-preview-images="{{ product.preview_images }}"></div>
+        <div id="imageCarousel" class="carousel carousel-dark slide" data-bs-interval="false">
+          <div id="carouselImages" class="carousel-inner">
+            {% for color, images in product.preview_images.items %}
+              {% for image in images %}
+                <div class="carousel-item{% if forloop.first %} active{% endif %}"  color="{{ color }}">
+                  <img src="{{ image }}" class="d-block w-100" alt="product image">
+                </div>
+              {% endfor %}
+            {% endfor %}
+          </div>
+          <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+          </button>
+          <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+          </button>
+        </div>
+      </div>
+      <div class="col-12 col-lg-4">
+        {% for size, price in product.size_prices.items %}
+          <h1 id="{{ size }}" class="price">${{ price }}</h1>
+        {% endfor %}
+        
+        <form id="variant-form" action="{% url 'add_to_cart' %}" method="post">
+          {% csrf_token %}
+          <input type="text" name="product_id" value="{{ product.id }}" hidden>
+          <!-- COLOR -->
+          <div class="list-group-horizontal">
+            {% for color in product.colors %}
+              {% if forloop.first %}
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()" checked>
+              {% else %}
+                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()">
+              {% endif %}
+              <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}" title="{{ color.name }}"></label>
+            {% endfor %}
+          </div>
+          <!-- SIZE -->
+          <select id="size" name="size" class="form-select my-3" aria-label="Size" onchange="onChange()">
+            {% for size in product.sizes %}
+              {% if forloop.first %}
+                <option value="{{ size }}" checked>{{ size }}</option>
+              {% else %}
+                <option value="{{ size }}">{{ size }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <input class="btn btn-primary" type="button" value="Add to Cart" onclick="onSubmit()">
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    // On color select
+    function onChange() {
+      color = document.querySelector('input[name="color"]:checked').value;
+      size = document.querySelector('#size option:checked').value;
+      // Change price
+      document.querySelectorAll('.price').forEach(elem => {
+        elem.hidden = true;
+      });
+      document.getElementById(size).hidden = false;
+      // Change pictures
+      const previewImagesData = document.getElementById('imageData').dataset.previewImages.replace(/'/g,'"');
+      const previewImages = JSON.parse(previewImagesData);
+
+      const carouselInner = document.getElementById('carouselImages');
+      let currentSlideIndex = document.querySelector('.carousel-item.active').dataset.slideIndex || 0;
+
+      // Mark current images to delete later
+      carouselInner.querySelectorAll('.carousel-item').forEach(elem => {
+        elem.classList.add('TO-DELETE');
+      });
+
+      // Add new images for the selected color
+      previewImages[color].forEach((image, i) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'carousel-item' + (i == currentSlideIndex ? ' active' : '');
+        itemDiv.dataset.slideIndex = i;
+
+        const img = document.createElement('img');
+        img.src = image;
+        img.className = 'd-block w-100';
+        img.alt = 'product image';
+
+        itemDiv.appendChild(img);
+        carouselInner.appendChild(itemDiv);
+      });
+
+      // Delete old images
+      carouselInner.querySelectorAll('.carousel-item.TO-DELETE').forEach(elem => {
+        elem.remove();
+      });
+
+      // Reset the carousel to the correct slide
+      const carousel = new bootstrap.Carousel(document.getElementById('imageCarousel'));
+      carousel.to(currentSlideIndex);
+    }
+    // On add to cart
+    function onSubmit() {
+      color = document.querySelector('input[name="color"]:checked').value;
+      size = document.querySelector('#size option:checked').value;
+      document.getElementById('variant-form').submit();
+    }
+    onChange()
+  </script>
+{% endblock %}
