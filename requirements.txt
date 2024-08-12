@@ -4,3 +4,4 @@ requests
 stripe
 django-bootstrap-v5
 gunicorn
+mysqlclient
