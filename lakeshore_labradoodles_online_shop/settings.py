@@ -85,12 +85,12 @@ WSGI_APPLICATION = 'lakeshore_labradoodles_online_shop.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('MYSQL_DB_NAME'),
         'USER': os.getenv('MYSQL_DB_USER'),
         'PASSWORD': os.getenv('MYSQL_DB_PASSWORD'),
-        'HOST': 'll-shop.onrender.com',
-        'PORT': '3306',
+        'HOST': '35.212.77.162',
+        'PORT': '5432',
     }
 }
 
