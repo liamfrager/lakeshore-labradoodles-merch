@@ -26,7 +26,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -86,8 +86,8 @@ WSGI_APPLICATION = 'lakeshore_labradoodles_online_shop.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('MYSQL_DB_NAME'),
-        'USER': os.getenv('MYSQL_DB_USER'),
+        'NAME': 'dbgmvnusgemjfr',
+        'USER': 'uvgnhe4bes6yr',
         'PASSWORD': os.getenv('MYSQL_DB_PASSWORD'),
         'HOST': '35.212.77.162',
         'PORT': '5432',
