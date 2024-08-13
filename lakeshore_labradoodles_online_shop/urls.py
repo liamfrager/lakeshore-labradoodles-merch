@@ -16,8 +16,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from lakeshore_labradoodles_online_shop import settings
+import django.conf.urls.static as static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('merch_shop.urls'))
 ]
+if settings.DEBUG:
+    urlpatterns += static.static(settings.STATIC_URL,
+                                 document_root=settings.STATIC_ROOT)
