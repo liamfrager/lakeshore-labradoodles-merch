@@ -86,7 +86,7 @@ def checkout(request: HttpRequest):
     try:
         cart = request.session.get('cart')
         # TODO: verify that all items in the cart still exist/are in stock through printful.
-        YOUR_DOMAIN = 'http://localhost:8000'
+        YOUR_DOMAIN = 'shop.lakeshorelabradoodles.com'
         checkout_session = stripe.checkout.Session.create(
             line_items=shop.get_line_items(cart),
             mode='payment',
