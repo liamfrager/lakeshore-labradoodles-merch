@@ -1,4 +1,5 @@
 <!-- Requires a stripe.checkout.Session object to be passed in as context. -->
+ {% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -6,35 +7,84 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmation</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+      table, th, td {
+        border: 1px solid #ddd;
+      }
+      th, td {
+        padding: 8px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      .bold {
+            font-weight: bold;
+      }
+      .right-align {
+          text-align: right;
+      }
+    </style>
 </head>
 <body>
-    <h1>Thank you for your order, {{ shipping_details.name }}!</h1>
-    <!-- <p>Your order ID is {{ order.id }}.</p> -->
-
-    <h2>Order Details:</h2>
-    <ul>
-        {% for item in line_items.data %}
-        <li>{{ item.description }} - Quantity: {{ item.quantity }} - Price: ${{ item.price.unit_amount }}</li>
-        {% endfor %}
-    </ul>
-
-    <p>Total Price: ${{ amount_total }}</p>
-
-    <h2>Shipping Address:</h2>
-    <p>
-      {{ shipping_details.address.line1 }}<br>
-      {% if shipping_details.address.line2 %}
-        {{ shipping_details.address.line2 }}<br>
-      {% endif %}
-      {{ shipping_details.address.city }}, {{ shipping_details.address.state }} {{ shipping_details.address.postal_code }}<br>
-      {{ shipping_details.address.country }}<br>
-    </p>
-
+    <h1>Thank you for your order{% if shipping_details.name %}, {{ shipping_details.name|first_word }}{% endif %}!</h1>
     <p>We appreciate your business and hope you enjoy your purchase.</p>
     <p>If you have any questions, feel free to reply to this email.</p>
-
+    <br>
     <p>Best regards,</p>
     <p>Rahna</p>
-    <p>Lakeshore Labradoodles</p>
+    <br>
+    <hr>
+    <!-- <p>Your order ID is {{ order.id }}.</p> -->
+    <!-- LINE ITEMS -->
+    {% if line_items.data %}
+      <h2>Order Details:</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Price</th>
+            <th>Quantity</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in line_items.data %}
+            <tr>
+              <td>{{ item.description }}</td>
+              <td>${{ item.price.unit_amount|cents_to_dollars }}</td>
+              <td>{{ item.quantity }}</td>
+              <td>${{item|total_price }}</td>
+            </tr>
+          {% endfor %}
+          <!-- Order Total Row -->
+          <tr>
+            <td class="right-align bold" colspan="3">Order Total</td>
+            <td class="bold">${{ amount_total|cents_to_dollars }}</td>
+          </tr>
+        </tbody>
+      </table>
+      
+    {% endif %}
+    <!-- SHIPPING -->
+    {% if shipping_details %}
+      <h2>Shipping Address:</h2>
+      <p>
+        {{ shipping_details.name}}<br>
+        {{ shipping_details.address.line1 }}<br>
+        {% if shipping_details.address.line2 %}
+          {{ shipping_details.address.line2 }}<br>
+        {% endif %}
+        {{ shipping_details.address.city }}, {{ shipping_details.address.state }} {{ shipping_details.address.postal_code }}<br>
+        {{ shipping_details.address.country }}<br>
+      </p>
+    {% endif %}
+    <!-- LOGO IMAGE -->
+    <img src="https://shop.lakeshorelabradoodles.com/static/images/logo.png" alt="Lakeshore Labradoodles Logo" height="100">
 </body>
 </html>

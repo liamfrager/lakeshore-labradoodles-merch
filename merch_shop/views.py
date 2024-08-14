@@ -1,3 +1,4 @@
+from email.message import EmailMessage
 from django.conf import settings
 import stripe
 import json
@@ -5,7 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMultiAlternatives
 from dotenv import load_dotenv
 from .shop import Shop
 load_dotenv()
@@ -114,6 +115,54 @@ def order_success(request: HttpRequest):
         return render(request, 'success.html')
 
 
+def email(request):
+    print('ORDER SUCCESSFUL!!!')
+    html = render_to_string(
+        'emails/order_confirmation.html', {
+            'shipping_details': {
+                'name': 'Liam Frager',
+                'address': {
+                    'line1': '6 Percy Dr.',
+                    'line2': '',
+                    'city': 'Wolfeboro',
+                    'state': 'NH',
+                    'postal_code': '03894',
+                    'country': 'USA',
+                },
+            },
+            'amount_total': 9500,
+            'line_items': {
+                'data': [
+                    {
+                        'description': 'Sweatshirt',
+                        'quantity': 1,
+                        'price': {
+                            'unit_amount': 3500
+                        }
+                    },
+                    {
+                        'description': 'T-Shirt',
+                        'quantity': 3,
+                        'price': {
+                            'unit_amount': 2000
+                        }
+                    }
+                ]
+            }
+        })
+
+    email = EmailMultiAlternatives(
+        subject='Order Confirmation',
+        body='plain text',
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=['liam.frager@gmail.com']
+    )
+
+    email.attach_alternative(html, 'text/html')
+
+    email.send()
+
+
 # WEBHOOKS
 @csrf_exempt
 def stripe_webhooks(request: HttpRequest):
@@ -129,9 +178,8 @@ def stripe_webhooks(request: HttpRequest):
         # Invalid payload
         return HttpResponse(status=400)
 
-    # Handle the event
+    # Payment succeeded
     if event.type == 'payment_intent.succeeded':
-        print('payment_intent.succeeded: ', event)
         payment_intent: stripe.PaymentIntent = event.data.object
         checkout_session = stripe.checkout.Session.list(
             payment_intent=payment_intent.id,
@@ -140,19 +188,37 @@ def stripe_webhooks(request: HttpRequest):
 
         order_response = shop.place_order(checkout_session)
 
+        # Order succeeded
         if order_response['code'] == 200:
-            message = render_to_string(
-                'emails/order_confirmation.html', checkout_session)
-
-            email = EmailMessage(
-                subject='Order Confirmation',
-                body=message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[checkout_session.customer_details.email]
+            html_message = render_to_string(
+                'emails/order_confirmation.html',
+                checkout_session
             )
-
+            email = EmailMultiAlternatives(
+                subject='Order Confirmation',
+                body=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[checkout_session.customer_email]
+            )
+            email.attach_alternative(html_message, 'text/html')
             email.send()
-
+        # Order failed
+        else:
+            html_message = render_to_string(
+                'emails/order_failed.html', {
+                    'order_response': order_response,
+                    'checkout_session': checkout_session,
+                    'payment_intent': payment_intent,
+                })
+            email = EmailMultiAlternatives(
+                subject='Issue with order!',
+                body=html_message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=['liam.frager@gmail.com']
+            )
+            email.attach_alternative(html_message, 'text/html')
+            email.send()
+    # Payment Failed
     elif event.type == 'payment_intent.payment_failed':
         payment_intent = event.data.object
 
