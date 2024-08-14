@@ -58,7 +58,9 @@
         <tbody>
           {% for item in items %}
             <tr>
-              <td><img src="{{ item.files.0.thumbnail_url }}" alt="Picture of {{ item.name }}" height="30"></td>
+              {% with item.files|last as last_image %}
+                <td><img src="{{ last_image.thumbnail_url }}" alt="{{ item.name }}" height="30"></td>
+              {% endwith %}
               <td>{{ item.name }}</td>
               <td>${{ item.retail_price }}</td>
               <td>{{ item.quantity }}</td>

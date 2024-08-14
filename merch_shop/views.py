@@ -1,4 +1,3 @@
-from email.message import EmailMessage
 from django.conf import settings
 import stripe
 import json
@@ -47,7 +46,7 @@ def add_to_cart(request: HttpRequest):
             'name': variant['name'],
             'price': float(variant['retail_price']),
             'total_price': float(variant['retail_price']),
-            'img': variant['files'][0]['thumbnail_url'],
+            'img': variant['files'][len(variant['files']) - 1]['thumbnail_url'],
             'quantity': 1,
         }
         cart['order_total'] = sum(
