@@ -138,30 +138,32 @@ def stripe_webhooks(request: HttpRequest):
         ).data[0]
 
         order_response = shop.place_order(checkout_session)
-        print('ORDER RESPONSE:\n', order_response['code'])
+        order = order_response['result']
         # Order succeeded
         if order_response['code'] == 200:
-            print('ORDER SUCCEEDED')
-            html_message = render_to_string(
-                'emails/order_confirmation.html',
-                order_response
-            )
-            email = EmailMultiAlternatives(
-                subject='Order Confirmation',
-                body=html_message,
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[order_response['recipient']['email']]
-            )
-            email.attach_alternative(html_message, 'text/html')
-            email.send()
-            print('ORDER SUCCESS EMAIL SENT: ',
-                  order_response['recipient']['email'])
+            try:
+                html_message = render_to_string(
+                    'emails/order_confirmation.html',
+                    order
+                )
+                email = EmailMultiAlternatives(
+                    subject='Order Confirmation',
+                    body=html_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[order['recipient']['email']]
+                )
+                email.attach_alternative(html_message, 'text/html')
+                email.send()
+                print('ORDER SUCCESS EMAIL SENT => ',
+                      order['recipient']['email'])
+            except Exception as e:
+                return HttpResponse(e)
+            return HttpResponse(status=order_response['code'])
         # Order failed
         else:
-            print('ORDER FAILED')
             html_message = render_to_string(
                 'emails/order_failed.html', {
-                    'order_response': order_response,
+                    'order_response': order,
                     'checkout_session': checkout_session,
                     'payment_intent': payment_intent,
                 })
@@ -173,10 +175,10 @@ def stripe_webhooks(request: HttpRequest):
             )
             email.attach_alternative(html_message, 'text/html')
             email.send()
-            print('ORDER FAILED EMAIL SENT: liam.frager@gmail.com')
+            print('ORDER FAILED EMAIL SENT => liam.frager@gmail.com')
+            return HttpResponse(status=order_response['code'])
     # Payment Failed
     elif event.type == 'payment_intent.payment_failed':
-        print('PAYMENT FAILED')
         payment_intent = event.data.object
         html_message = render_to_string(
             'emails/payment_failed.html',
@@ -190,9 +192,7 @@ def stripe_webhooks(request: HttpRequest):
         )
         email.attach_alternative(html_message, 'text/html')
         email.send()
-        print('PAYMENT FAILED EMAIL SENT: ', payment_intent.receipt_email)
+        print('PAYMENT FAILED EMAIL SENT => ', payment_intent.receipt_email)
     else:
         print('Unhandled event type {}'.format(event.type))
-
-    print(f'FROM EMAIL: {settings.DEFAULT_FROM_EMAIL}')
     return HttpResponse(status=200)

@@ -58,7 +58,7 @@
         <tbody>
           {% for item in items %}
             <tr>
-              <td><img src="{{ item.files[0].thumbnail_url }}" alt="Picture of {{ item.name }}"></td>
+              <td><img src="{{ item.files.0.thumbnail_url }}" alt="Picture of {{ item.name }}" height="30"></td>
               <td>{{ item.name }}</td>
               <td>${{ item.retail_price }}</td>
               <td>{{ item.quantity }}</td>
@@ -67,7 +67,7 @@
           {% endfor %}
           <!-- Order Total Row -->
           <tr>
-            <td class="right-align bold" colspan="3">Order Total</td>
+            <td class="right-align bold" colspan="4">Order Total</td>
             <td class="bold">${{ retail_costs.subtotal|floatformat:2 }}</td>
           </tr>
         </tbody>
