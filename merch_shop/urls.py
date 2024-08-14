@@ -14,4 +14,5 @@ urlpatterns = [
     path('order_success', views.order_success, name='order_success'),
     # WEBHOOKS
     path('stripe_webhooks', views.stripe_webhooks, name='stripe_webhooks'),
+    path('email', views.email, name='email'),
 ]

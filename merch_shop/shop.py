@@ -65,9 +65,6 @@ class Printful():
             # Draft order without processing for fulfilliment. Used for testing.
             params={'confirm': 'false'},
         )
-        if response.json()['code'] == 200:
-            user_email = order['recipient']['email']
-            print(user_email)
         return response.json()
 
 

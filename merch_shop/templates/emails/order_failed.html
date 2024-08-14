@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Failed</title>
+</head>
+<body>
+    <h1>An order failed!</h1>
+    <p>Reach out to the customer ASAP to let them know what happened.</p>
+    <hr>
+    <h2>Printful order response:</h2>
+    <pre><code>
+      {{ order_response }}
+    </code></pre>
+    <h2>Stripe checkout session:</h2>
+    <pre><code>
+      {{ checkout_session }}
+    </code></pre>
+    <h2>Stripe payment intent:</h2>
+    <pre><code>
+      {{ payment_intent }}
+    </code></pre>
+</body>
+</html>
