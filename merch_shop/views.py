@@ -154,8 +154,8 @@ def stripe_webhooks(request: HttpRequest):
             )
             email.attach_alternative(html_message, 'text/html')
             email.send()
-            print(f'ORDER SUCCESS EMAIL SENT: \
-                  {order_response['recipient']['email']}')
+            print('ORDER SUCCESS EMAIL SENT: ',
+                  order_response['recipient']['email'])
         # Order failed
         else:
             print('ORDER FAILED')
@@ -176,6 +176,7 @@ def stripe_webhooks(request: HttpRequest):
             print('ORDER FAILED EMAIL SENT: liam.frager@gmail.com')
     # Payment Failed
     elif event.type == 'payment_intent.payment_failed':
+        print('PAYMENT FAILED')
         payment_intent = event.data.object
         html_message = render_to_string(
             'emails/payment_failed.html',
@@ -189,7 +190,7 @@ def stripe_webhooks(request: HttpRequest):
         )
         email.attach_alternative(html_message, 'text/html')
         email.send()
-
+        print('PAYMENT FAILED EMAIL SENT: ', payment_intent.receipt_email)
     else:
         print('Unhandled event type {}'.format(event.type))
 
