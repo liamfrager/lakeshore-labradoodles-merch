@@ -1,4 +1,4 @@
-<!-- Requires a stripe.checkout.Session object to be passed in as context. -->
+<!-- Requires a stripe.paymentIntent object to be passed in as context. -->
  {% load custom_filters %}
 
 <!DOCTYPE html>
@@ -9,7 +9,7 @@
     <title>Payment Failed</title>
 </head>
 <body>
-    <h1>Thank you for your order{% if shipping_details.name %}, {{ shipping_details.name|first_word }}{% endif %}!</h1>
+    <h1>Thank you for your order{% if shipping.name %}, {{ shipping.name|first_word }}{% endif %}!</h1>
     <p>Unfortunately, your payment failed and your order could not be placed.</p>
     <p>Please try again by going to <a href="https://shop.lakeshorelabradoodles.com">shop.lakeshorelabradoodles.com</a> and placing your order again.</p>
     <p>If you have any questions, feel free to reply to this email.</p>
