@@ -1,8 +1,11 @@
+from django.conf import settings
 import stripe
 import json
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt
+from django.core.mail import EmailMessage
 from dotenv import load_dotenv
 from .shop import Shop
 load_dotenv()
@@ -86,7 +89,7 @@ def checkout(request: HttpRequest):
     try:
         cart = request.session.get('cart')
         # TODO: verify that all items in the cart still exist/are in stock through printful.
-        YOUR_DOMAIN = 'shop.lakeshorelabradoodles.com'
+        YOUR_DOMAIN = 'https://shop.lakeshorelabradoodles.com'
         checkout_session = stripe.checkout.Session.create(
             line_items=shop.get_line_items(cart),
             mode='payment',
@@ -96,18 +99,17 @@ def checkout(request: HttpRequest):
             metadata={id: item['quantity']
                       for id, item in cart['items'].items()}
         )
-        request.session['order_success'] = True
+        request.session['checkout_success'] = True
         return redirect(checkout_session.url)
     except Exception as e:
-        del request.session['order_success']
-        return f'Could not checkout. An error occurred: {str(e)}'
+        return HttpResponse(f'Could not checkout. An error occurred: {str(e)}')
 
 
 def order_success(request: HttpRequest):
     if not request.session.get('order_success'):
         return redirect('home')
     else:
-        del request.session['order_success']
+        del request.session['checkout_success']
         del request.session['cart']
         return render(request, 'success.html')
 
@@ -115,6 +117,7 @@ def order_success(request: HttpRequest):
 # WEBHOOKS
 @csrf_exempt
 def stripe_webhooks(request: HttpRequest):
+    print('Webhook recieved')
     payload = request.body
     event = None
 
@@ -128,8 +131,31 @@ def stripe_webhooks(request: HttpRequest):
 
     # Handle the event
     if event.type == 'payment_intent.succeeded':
-        payment_intent = event.data.object  # contains a stripe.PaymentIntent
-        shop.place_order(payment_intent)
+        print('payment_intent.succeeded: ', event)
+        payment_intent: stripe.PaymentIntent = event.data.object
+        checkout_session = stripe.checkout.Session.list(
+            payment_intent=payment_intent.id,
+            expand=['data.line_items'],
+        ).data[0]
+
+        order_response = shop.place_order(checkout_session)
+
+        if order_response['code'] == 200:
+            message = render_to_string(
+                'emails/order_confirmation.html', checkout_session)
+
+            email = EmailMessage(
+                subject='Order Confirmation',
+                body=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                to=[checkout_session.customer_details.email]
+            )
+
+            email.send()
+
+    elif event.type == 'payment_intent.payment_failed':
+        payment_intent = event.data.object
+
     else:
         print('Unhandled event type {}'.format(event.type))
 

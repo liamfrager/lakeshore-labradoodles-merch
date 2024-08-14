@@ -1,0 +1,40 @@
+<!-- Requires a stripe.checkout.Session object to be passed in as context. -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation</title>
+</head>
+<body>
+    <h1>Thank you for your order, {{ shipping_details.name }}!</h1>
+    <!-- <p>Your order ID is {{ order.id }}.</p> -->
+
+    <h2>Order Details:</h2>
+    <ul>
+        {% for item in line_items.data %}
+        <li>{{ item.description }} - Quantity: {{ item.quantity }} - Price: ${{ item.price.unit_amount }}</li>
+        {% endfor %}
+    </ul>
+
+    <p>Total Price: ${{ amount_total }}</p>
+
+    <h2>Shipping Address:</h2>
+    <p>
+      {{ shipping_details.address.line1 }}<br>
+      {% if shipping_details.address.line2 %}
+        {{ shipping_details.address.line2 }}<br>
+      {% endif %}
+      {{ shipping_details.address.city }}, {{ shipping_details.address.state }} {{ shipping_details.address.postal_code }}<br>
+      {{ shipping_details.address.country }}<br>
+    </p>
+
+    <p>We appreciate your business and hope you enjoy your purchase.</p>
+    <p>If you have any questions, feel free to reply to this email.</p>
+
+    <p>Best regards,</p>
+    <p>Rahna</p>
+    <p>Lakeshore Labradoodles</p>
+</body>
+</html>

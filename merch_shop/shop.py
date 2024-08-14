@@ -85,7 +85,8 @@ class Stripe():
             'unit_amount': variant['retail_price'].replace('.', ''),
             'product_data': {
                 'name': variant['name'],
-                'description': ' ',  # TODO: Implement product descriptions
+                # TODO: Implement product descriptions
+                'description': variant['name'],
                 'images': [file['thumbnail_url'] for file in variant['files']],
             },
         }
@@ -175,12 +176,8 @@ class Shop():
             line_items.append(line_item)
         return line_items
 
-    def place_order(self, payment_intent: stripe.PaymentIntent):
-        '''Takes a Stripe PaymentIntent object as an input and places an order on Printful.'''
-        checkout_session = stripe.checkout.Session.list(
-            payment_intent=payment_intent.id,
-            expand=['data.line_items'],
-        ).data[0]
+    def place_order(self, checkout_session: stripe.checkout.Session):
+        '''Takes a stripe.checkout.Session object as an input and places an order on Printful.'''
         order = {
             'recipient': {
                 'name': checkout_session.shipping_details.name,
@@ -208,4 +205,4 @@ class Shop():
                 'store_name': 'Lakeshore Labradoodles',
             },
         }
-        self.printful.place_order(order)
+        return self.printful.place_order(order)
