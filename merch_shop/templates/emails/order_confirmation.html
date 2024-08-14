@@ -32,7 +32,9 @@
     </style>
 </head>
 <body>
-    <h1>Thank you for your order{% if shipping_details.name %}, {{ shipping_details.name|first_word }}{% endif %}!</h1>
+    <h1>Thank you for your order{% if recipient.name %}, {{ recipient.name|first_word }}{% endif %}!</h1>
+    <p>Your order ID is {{ id }}.</p>
+    <br>
     <p>We appreciate your business and hope you enjoy your purchase.</p>
     <p>If you have any questions, feel free to reply to this email.</p>
     <br>
@@ -40,32 +42,33 @@
     <p>Rahna</p>
     <br>
     <hr>
-    <!-- <p>Your order ID is {{ order.id }}.</p> -->
+    
     <!-- LINE ITEMS -->
-    {% if line_items.data %}
+    {% if items %}
       <h2>Order Details:</h2>
       <table>
         <thead>
           <tr>
-            <th>Item</th>
+            <th colspan="2">Item</th>
             <th>Price</th>
             <th>Quantity</th>
             <th>Total</th>
           </tr>
         </thead>
         <tbody>
-          {% for item in line_items.data %}
+          {% for item in items %}
             <tr>
-              <td>{{ item.description }}</td>
-              <td>${{ item.price.unit_amount|cents_to_dollars }}</td>
+              <td><img src="{{ item.files[0].thumbnail_url }}" alt="Picture of {{ item.name }}"></td>
+              <td>{{ item.name }}</td>
+              <td>${{ item.retail_price }}</td>
               <td>{{ item.quantity }}</td>
-              <td>${{item|total_price }}</td>
+              <td>${{ item|total_price }}</td>
             </tr>
           {% endfor %}
           <!-- Order Total Row -->
           <tr>
             <td class="right-align bold" colspan="3">Order Total</td>
-            <td class="bold">${{ amount_total|cents_to_dollars }}</td>
+            <td class="bold">${{ retail_costs.subtotal|floatformat:2 }}</td>
           </tr>
         </tbody>
       </table>
@@ -75,13 +78,13 @@
     {% if shipping_details %}
       <h2>Shipping Address:</h2>
       <p>
-        {{ shipping_details.name}}<br>
-        {{ shipping_details.address.line1 }}<br>
-        {% if shipping_details.address.line2 %}
-          {{ shipping_details.address.line2 }}<br>
+        {{ recipient.name}}<br>
+        {{ recipient.address1 }}<br>
+        {% if recipient.address2 %}
+          {{ recipient.address2 }}<br>
         {% endif %}
-        {{ shipping_details.address.city }}, {{ shipping_details.address.state }} {{ shipping_details.address.postal_code }}<br>
-        {{ shipping_details.address.country }}<br>
+        {{ recipient.city }}, {{ recipient.state_code }} {{ recipient.zip }}<br>
+        {{ recipient.country_name }}<br>
       </p>
     {% endif %}
     <!-- LOGO IMAGE -->

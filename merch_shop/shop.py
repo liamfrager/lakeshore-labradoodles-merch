@@ -58,6 +58,7 @@ class Printful():
         return response.json()['result']['variant']['color_code']
 
     def place_order(self, order):
+        '''Takes Printful order data as an input and places an order. Returns an API response from Printful.'''
         response = requests.post(
             url=self.api_endpoint + 'orders',
             headers=self.api_headers,
@@ -174,7 +175,7 @@ class Shop():
         return line_items
 
     def place_order(self, checkout_session: stripe.checkout.Session):
-        '''Takes a stripe.checkout.Session object as an input and places an order on Printful.'''
+        '''Takes a stripe.checkout.Session object as an input and places an order on Printful. Returns Printful's API response.'''
         order = {
             'recipient': {
                 'name': checkout_session.shipping_details.name,
@@ -198,7 +199,7 @@ class Shop():
                 'email': 'lakeshorelabradoodles@gmail.com',
                 'phone': '+1(860)478-0267',
                 'message': 'Thank you for your purchase!',
-                'logo_url': '​http://www.your-domain.com/packing-logo.png',
+                'logo_url': 'https://shop.lakeshorelabradoodles.com/static/images/logo.png',
                 'store_name': 'Lakeshore Labradoodles',
             },
         }

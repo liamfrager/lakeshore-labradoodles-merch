@@ -14,7 +14,7 @@ def cents_to_dollars(value):
 @register.filter
 def total_price(value):
     try:
-        return cents_to_dollars(value['price']['unit_amount'] * value['quantity'])
+        return "{:.2f}".format(float(value['retail_price']) * value['quantity'])
     except (ValueError, TypeError):
         return value
 
