@@ -64,7 +64,7 @@ class Printful():
             headers=self.api_headers,
             json=order,
             # Draft order without processing for fulfilliment. Used for testing.
-            params={'confirm': 'false'},
+            # params={'confirm': 'false'},
         )
         return response.json()
 
