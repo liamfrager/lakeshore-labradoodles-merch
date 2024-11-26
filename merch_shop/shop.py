@@ -114,13 +114,22 @@ class Shop():
         '''Takes Printful sync product ID as returns a Product object with product details.'''
         sync = self.printful.get_product(id)
 
+        clothing_size_order = ['XS', 'S', 'M',
+                               'L', 'XL', '2XL', '3XL', '4XL', '5XL']
         # Create product object
         product = Product(
             id=id,
             name=sync['sync_product']['name'],
             image=sync['sync_product']['thumbnail_url'],
-            sizes=[size for size in ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', '5XL'] if size in set([
-                variant['size'] for variant in sync['sync_variants']])],
+            # sizes=[size for size in clothing_size_order if size in set([
+            #     variant['size'] for variant in sync['sync_variants']])],
+            sizes=sorted(
+                [size for size in clothing_size_order if size in set(variant['size'] for variant in sync['sync_variants'])] +
+                [size for size in set(variant['size'] for variant in sync['sync_variants'])
+                    if size not in clothing_size_order],
+                key=lambda size: (clothing_size_order.index(
+                    size) if size in clothing_size_order else float('inf'), size)
+            ),
         )
 
         preview_images = {}
