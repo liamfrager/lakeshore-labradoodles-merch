@@ -35,26 +35,40 @@
           {% csrf_token %}
           <input type="text" name="product_id" value="{{ product.id }}" hidden>
           <!-- COLOR -->
-          <div class="list-group-horizontal">
+           {% if product.colors|length > 1 %}
+            <div class="list-group-horizontal">
+              {% for color in product.colors %}
+                {% if forloop.first %}
+                  <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()" checked>
+                {% else %}
+                  <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()">
+                {% endif %}
+                <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}" title="{{ color.name }}"></label>
+              {% endfor %}
+            </div>
+          {% else %}
             {% for color in product.colors %}
-              {% if forloop.first %}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()" checked>
-              {% else %}
-                <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" onchange="onChange()">
-              {% endif %}
-              <label class="btn color-variant" style="background-color: {{ color.code }};" for="{{ color.name }}" title="{{ color.name }}"></label>
+              <input type="radio" class="btn-check" name="color" id="{{ color.name }}" value="{{ color.name }}" checked hidden>
             {% endfor %}
-          </div>
+          {% endif %}
           <!-- SIZE -->
-          <select id="size" name="size" class="form-select my-3" aria-label="Size" onchange="onChange()">
+          {% if product.sizes|length > 1 %}
+            <select id="size" name="size" class="form-select my-3" aria-label="Size" onchange="onChange()">
+              {% for size in product.sizes %}
+                {% if forloop.first %}
+                  <option value="{{ size }}" checked>{{ size }}</option>
+                {% else %}
+                  <option value="{{ size }}">{{ size }}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          {% else %}
             {% for size in product.sizes %}
-              {% if forloop.first %}
+              <select id="size" name="size" class="form-select my-3" aria-label="Size" onchange="onChange()" hidden>
                 <option value="{{ size }}" checked>{{ size }}</option>
-              {% else %}
-                <option value="{{ size }}">{{ size }}</option>
-              {% endif %}
+              </select>
             {% endfor %}
-          </select>
+          {% endif %}
           <input class="btn btn-primary" type="button" value="Add to Cart" onclick="onSubmit()">
         </form>
       </div>
@@ -63,7 +77,8 @@
   <script>
     // On color select
     function onChange() {
-      color = document.querySelector('input[name="color"]:checked').value;
+      colorSelector = document.querySelector('input[name="color"]:checked');
+      color = colorSelector ? colorSelector.value : null;
       size = document.querySelector('#size option:checked').value;
       // Change price
       document.querySelectorAll('.price').forEach(elem => {
@@ -108,8 +123,6 @@
     }
     // On add to cart
     function onSubmit() {
-      color = document.querySelector('input[name="color"]:checked').value;
-      size = document.querySelector('#size option:checked').value;
       document.getElementById('variant-form').submit();
     }
     onChange()
