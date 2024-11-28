@@ -121,8 +121,6 @@ class Shop():
             id=id,
             name=sync['sync_product']['name'],
             image=sync['sync_product']['thumbnail_url'],
-            # sizes=[size for size in clothing_size_order if size in set([
-            #     variant['size'] for variant in sync['sync_variants']])],
             sizes=sorted(
                 [size for size in clothing_size_order if size in set(variant['size'] for variant in sync['sync_variants'])] +
                 [size for size in set(variant['size'] for variant in sync['sync_variants'])
@@ -141,7 +139,8 @@ class Shop():
             if color not in preview_images:
                 images = []
                 for file in variant['files']:
-                    images.append(file['preview_url'])
+                    if file['filename'].endswith('.jpg'):
+                        images.append(file['preview_url'])
                 preview_images[color] = images
             # Get product variant prices
             size = variant['size']
