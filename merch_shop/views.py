@@ -1,3 +1,4 @@
+import os
 from django.conf import settings
 import stripe
 import json
@@ -118,15 +119,26 @@ def order_success(request: HttpRequest):
 @csrf_exempt
 def stripe_webhooks(request: HttpRequest):
     payload = request.body
-    event = None
+    # Get the Stripe signature header
+    sig_header = request.headers.get('Stripe-Signature')
+    # Add your Stripe webhook secret here
+    webhook_secret = os.getenv('STRIPE_WEBHOOK_SIGNING_SECRET')
 
     try:
-        event = stripe.Event.construct_from(
-            json.loads(payload), stripe.api_key
+        print('VALIDATING WEBHOOK EVENT...')
+        # Verify the event using the payload and signature
+        event = stripe.Webhook.construct_event(
+            payload, sig_header, webhook_secret
         )
-    except ValueError as e:
+        print('WEBHOOK EVENT VALIDATED')
+    except ValueError:
         # Invalid payload
-        return HttpResponse(status=400)
+        print('WEBHOOK EVENT VALIDATION FAILED => ValueError')
+        return HttpResponse(status=400, content="ValueError")
+    except stripe.error.SignatureVerificationError:
+        # Invalid signature
+        print('WEBHOOK EVENT VALIDATION FAILED => SignatureVerificationError')
+        return HttpResponse(status=400, content="SignatureVerificationError")
 
     # Payment succeeded
     if event.type == 'payment_intent.succeeded':
