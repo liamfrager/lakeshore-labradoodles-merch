@@ -5,6 +5,8 @@ from .models import Product, Color
 
 PRINTFUL_AUTH_TOKEN = os.getenv('PRINTFUL_AUTH_TOKEN')
 STRIPE_API_KEY = os.getenv('STRIPE_API_KEY')
+AUTO_FULFILL_PRINTFUL_ORDERS = os.getenv(
+    'AUTO_FULFILL_PRINTFUL_ORDERS') == 'True'
 
 
 class Printful():
@@ -63,8 +65,7 @@ class Printful():
             url=self.api_endpoint + 'orders',
             headers=self.api_headers,
             json=order,
-            # Draft order without processing for fulfilliment. Used for testing.
-            # params={'confirm': 'false'},
+            params={'confirm': AUTO_FULFILL_PRINTFUL_ORDERS},
         )
         return response.json()
 

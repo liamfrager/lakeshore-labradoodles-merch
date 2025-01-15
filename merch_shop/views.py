@@ -130,14 +130,16 @@ def stripe_webhooks(request: HttpRequest):
         event = stripe.Webhook.construct_event(
             payload, sig_header, webhook_secret
         )
-        print('WEBHOOK EVENT VALIDATED')
-    except ValueError:
+        print(f'WEBHOOK EVENT VALIDATED => {event.type}')
+    except ValueError as err:
         # Invalid payload
         print('WEBHOOK EVENT VALIDATION FAILED => ValueError')
+        print(err)
         return HttpResponse(status=400, content="ValueError")
-    except stripe.error.SignatureVerificationError:
+    except stripe.error.SignatureVerificationError as err:
         # Invalid signature
         print('WEBHOOK EVENT VALIDATION FAILED => SignatureVerificationError')
+        print(err)
         return HttpResponse(status=400, content="SignatureVerificationError")
 
     # Payment succeeded
